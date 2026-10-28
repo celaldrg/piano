@@ -248,6 +248,11 @@ select {
   transition: border-color var(--fast) ease;
 }
 
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .select option {
   background: var(--surface);
   color: var(--text);
@@ -654,6 +659,13 @@ select {
   min-height: 52px;
   padding: 6px 4px;
   font-size: 0.8125rem;
+}
+
+.snap-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .icon--record {

@@ -9,6 +9,10 @@ import {
   recordingsFromJSON,
   recordingsToJSON,
   sixteenthMs,
+  snapTempo,
+  takeForPlayback,
+  DEFAULT_SNAP_TEMPO,
+  SNAP_TEMPOS,
 } from '../src/recorder.js';
 
 const on = (midi, time) => ({ type: 'on', midi, time });
@@ -201,4 +205,25 @@ test('takes are numbered and only the newest are kept', () => {
   let full = [];
   for (let count = 0; count < MAX_RECORDINGS + 2; count += 1) full = addRecording(full, take);
   assert.equal(full.length, MAX_RECORDINGS);
+});
+
+test('snapTempo accepts only the offered tempos', () => {
+  for (const bpm of SNAP_TEMPOS) assert.equal(snapTempo(String(bpm)), bpm);
+  assert.equal(snapTempo(null), DEFAULT_SNAP_TEMPO);
+  assert.equal(snapTempo('abc'), DEFAULT_SNAP_TEMPO);
+  assert.equal(snapTempo('121'), DEFAULT_SNAP_TEMPO);
+});
+
+test('takeForPlayback snaps a take only when snapping is on and keeps the saved take', () => {
+  // 120 BPM: one sixteenth = 125 ms.
+  const take = { id: 3, events: [on(60, 0), off(60, 110), on(64, 260), off(64, 490)], duration: 490 };
+  const copy = structuredClone(take);
+  assert.equal(takeForPlayback(take, { snap: false, bpm: 120 }), take);
+  const snapped = takeForPlayback(take, { snap: true, bpm: 120 });
+  assert.deepEqual(recordingToNotes(snapped), [
+    { midi: 60, start: 0, end: 125 },
+    { midi: 64, start: 250, end: 500 },
+  ]);
+  assert.equal(snapped.id, 3);
+  assert.deepEqual(take, copy);
 });

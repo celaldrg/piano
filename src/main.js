@@ -13,7 +13,7 @@ import { MELODIES } from './melodies.js';
 import { midiToFrequency } from './music.js';
 import { createPiano } from './piano.js';
 import { activeNotesAt, scheduleDuration, scheduleFromMelody, scheduleFromRecording } from './player.js';
-import { recordingsFromJSON, recordingsToJSON } from './recorder.js';
+import { SNAP_TEMPOS, recordingsFromJSON, recordingsToJSON, snapTempo, takeForPlayback } from './recorder.js';
 import { loadText, saveText } from './storage.js';
 import { createSynth } from './synth.js';
 import { renderTakes } from './takes-view.js';
@@ -55,6 +55,8 @@ const ui = {
   clear: byId('rec-clear'),
   clearLabel: byId('rec-clear-label'),
   recStatus: byId('rec-status'),
+  snap: byId('rec-snap'),
+  tempo: byId('rec-tempo'),
   takesTitle: byId('takes-title'),
   takes: byId('takes'),
   melody: byId('melody'),
@@ -79,6 +81,8 @@ const settings = {
   instrument: getInstrument(load('instrument')).id,
   volume: savedVolume(),
   labels: load('labels') !== 'off',
+  snap: load('snap') === 'on',
+  bpm: snapTempo(load('bpm')),
   melody: MELODIES.find((melody) => melody.id === load('melody'))?.id ?? MELODIES[0].id,
 };
 
@@ -210,7 +214,7 @@ function toggleTake(id) {
 
 function playTake(take) {
   notice = null;
-  startPlayback('take', take.id, scheduleFromRecording(take));
+  startPlayback('take', take.id, scheduleFromRecording(takeForPlayback(take, settings)));
 }
 
 /** The first click arms Clear; a second click within a few seconds deletes every take. */
@@ -301,12 +305,13 @@ function endPlayback() {
 
 function applyLanguage() {
   const { language } = settings;
-  const t = (key) => translate(language, key);
+  const t = (key, params) => translate(language, key, params);
   document.documentElement.lang = language;
   document.title = t('app.title');
   document.querySelectorAll('[data-i18n]').forEach((node) => setText(node, t(node.dataset.i18n)));
   document.querySelectorAll('[data-i18n-label]').forEach((node) => node.setAttribute('aria-label', t(node.dataset.i18nLabel)));
   fillSelect(ui.instrument, INSTRUMENTS.map(({ id }) => [id, t(`instrument.${id}`)]), settings.instrument);
+  fillSelect(ui.tempo, SNAP_TEMPOS.map((bpm) => [String(bpm), t('rec.bpm', { bpm })]), String(settings.bpm));
   fillSelect(ui.melody, MELODIES.map(({ id }) => [id, t(`melody.${id}`)]), settings.melody);
   render();
 }
@@ -373,6 +378,8 @@ function renderRecorder(state, t) {
   ui.play.disabled = recording || recordings.length === 0;
   ui.clear.disabled = recording || recordings.length === 0;
   ui.clear.classList.toggle('is-armed', clearTimer !== null);
+  ui.snap.setAttribute('aria-pressed', String(settings.snap));
+  ui.tempo.disabled = !settings.snap;
   setText(ui.clearLabel, t(clearTimer === null ? 'rec.clear' : 'rec.confirm'));
   setText(ui.recStatus, recorderStatus(state, playingId, t));
   ui.takesTitle.hidden = recordings.length === 0;
@@ -453,6 +460,15 @@ ui.record.addEventListener('click', toggleRecording);
 ui.stop.addEventListener('click', stopRecorder);
 ui.play.addEventListener('click', playNewestTake);
 ui.clear.addEventListener('click', clearTakes);
+ui.snap.addEventListener('click', () => {
+  settings.snap = !settings.snap;
+  save('snap', settings.snap ? 'on' : 'off');
+  render();
+});
+ui.tempo.addEventListener('change', () => {
+  settings.bpm = snapTempo(ui.tempo.value);
+  save('bpm', String(settings.bpm));
+});
 ui.takes.addEventListener('click', (event) => {
   const button = event.target.closest('[data-take]');
   if (button) toggleTake(Number(button.dataset.take));

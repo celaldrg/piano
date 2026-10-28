@@ -127,6 +127,32 @@ export function quantizeRecording(recording, bpm) {
   return { ...recording, ...notesToRecording(separateRepeats(snapped)) };
 }
 
+/** Tempos offered for snapping takes to the 1/16 grid, in BPM. */
+export const SNAP_TEMPOS = [60, 80, 100, 120, 140, 160];
+/** Tempo used when no valid snap tempo was saved. */
+export const DEFAULT_SNAP_TEMPO = 120;
+
+/**
+ * Reads a saved snap tempo; anything that is not one of SNAP_TEMPOS gives the default.
+ * @param {unknown} value E.g. the text kept in storage.
+ * @returns {number} One of SNAP_TEMPOS.
+ */
+export function snapTempo(value) {
+  const bpm = Number(value);
+  return SNAP_TEMPOS.includes(bpm) ? bpm : DEFAULT_SNAP_TEMPO;
+}
+
+/**
+ * The version of a take to play back: snapped to the 1/16 grid when snapping is
+ * on, otherwise the take itself. The saved take is never changed.
+ * @param {Recording} take
+ * @param {{ snap: boolean, bpm: number }} options
+ * @returns {Recording}
+ */
+export function takeForPlayback(take, { snap, bpm }) {
+  return snap ? quantizeRecording(take, bpm) : take;
+}
+
 /**
  * Appends a take to a list and numbers it with the next free id (1, 2, 3 ...).
  * @param {Recording[]} list

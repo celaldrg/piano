@@ -19,6 +19,7 @@ A piano that runs in any modern browser, on a phone or a desktop. It has no depe
 - **Recorder:** Record, Stop, Play and Clear.
   - Up to 8 takes are kept in this browser.
   - Each take has a mini piano roll and its own play button.
+  - Optional **Snap to 1/16**: playback snaps notes to a sixteenth-note grid at the chosen tempo (60–160 BPM); the saved take stays untouched.
 - **Melodies:** three public-domain melodies: Ode to Joy, Twinkle Twinkle Little Star and Frère Jacques.
   - Listen to one and watch its keys light up.
   - Or practise it in Learn mode, which marks the next key, waits until you press it and counts mistakes.
@@ -139,6 +140,7 @@ Telefonda da bilgisayarda da her modern tarayıcıda çalışan bir piyano. Bağ
 - **Kayıt:** Kaydet, Durdur, Çal ve Temizle.
   - En fazla 8 kayıt bu tarayıcıda saklanır.
   - Her kaydın küçük bir piyano rulosu ve kendi çal düğmesi var.
+  - İsteğe bağlı **1/16’ya hizala**: çalarken notalar seçilen tempoda (60–160 BPM) on altılık ızgaraya oturur; saklanan kayıt değişmez.
 - **Melodiler:** kamu malı üç melodi: Neşeye Övgü, Parla Parla Küçük Yıldız ve Tembel Çocuk (Frère Jacques).
   - Bir melodiyi dinleyip tuşlarının yanışını izleyebilirsin.
   - Ya da Öğren modunda çalışabilirsin: sıradaki tuş işaretlenir, sen basana kadar beklenir ve hatalar sayılır.
